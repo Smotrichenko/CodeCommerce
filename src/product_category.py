@@ -11,7 +11,9 @@ class Product:
         self.quantity = quantity
 
     def __repr__(self):
-        return f"Товар: {self.name}, Описание: {self.description}, Цена: {self.price} руб."
+        return (
+            f"Товар: {self.name}, Описание: {self.description}, Цена: {self.price} руб. Остаток: {self.quantity} шт."
+        )
 
     @classmethod
     def new_product(cls, product_data: Dict, existing_products: List = None):
@@ -27,6 +29,7 @@ class Product:
                     product.quantity += quantity
                     if price > product.price:
                         product.price = price
+                        product.description = description
                     return product
 
         return cls(name, description, price, quantity)
@@ -74,6 +77,7 @@ class Category:
             existing_product.quantity += product.quantity
             if product.price > existing_product.price:
                 existing_product.price = product.price
+                existing_product.description = product.description
         else:
             self.__products.append(product)
             Category.product_count += 1
