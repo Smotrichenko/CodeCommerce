@@ -18,3 +18,13 @@ def sample_category(sample_products):
     Category.category_count = 0
     Category.product_count = 0
     return Category(name="Тестовая категория", description="Тестовое описание", products=sample_products)
+
+
+@pytest.fixture(autouse=True)
+def reset_category_counterse():
+    """
+    Перед каждым тестом сбрасывает атрибуты
+    category_count и product_count у класса Category.
+    """
+    Category.category_count = 0
+    Category.product_count = 0
