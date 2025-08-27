@@ -1,5 +1,7 @@
-from src.product_category import Category, Product
 import pytest
+
+from src.product_category import Category, Product
+
 
 def test_product_initialization(sample_product):
     assert sample_product.name == "Тестовый товар"
@@ -26,6 +28,7 @@ def test_category_initialization(sample_category, sample_products):
     assert "Товар 2" in products_list[1]
     assert "200 руб." in products_list[1]
     assert "Остаток: 3 шт." in products_list[1]
+
 
 def test_category_count(sample_category):
     assert Category.category_count == 1
