@@ -7,7 +7,7 @@ class Product:
     def __init__(self, name: str, description: str, price: float, quantity: int):
         self.name = name
         self.description = description
-        self.__price = price
+        self._price = price
         self.quantity = quantity
 
     def __str__(self):
@@ -18,6 +18,9 @@ class Product:
         """Сложение продуктов: возвращает общую стоимость всех товаров"""
         if not isinstance(other, Product):
             raise TypeError("Можно складывать только объекты класса Product")
+
+        if type(self) is not type(other):
+            raise TypeError("Можно складывать только товары из одинаковых классов")
 
         return (self.price * self.quantity) + (other.price * other.quantity)
 
@@ -42,18 +45,76 @@ class Product:
 
     @property
     def price(self):
-        return self.__price
+        return self._price
 
     @price.setter
     def price(self, new_price):
         if new_price <= 0:
             print("Цена не должна быть нулевая или отрицательная")
-        elif new_price < self.__price:
-            confirm = input(f"Цена снижается с {self.__price} до {new_price}. Подтвердите (y/n): ")
+        elif new_price < self._price:
+            confirm = input(f"Цена снижается с {self._price} до {new_price}. Подтвердите (y/n): ")
             if confirm.lower() == "y":
-                self.__price = new_price
+                self._price = new_price
         else:
-            self.__price = new_price
+            self._price = new_price
+
+
+class Smartphone(Product):
+    """Класс для смартфонов - наследуется от Product"""
+
+    def __init__(
+        self,
+        name: str,
+        description: str,
+        price: float,
+        quantity: int,
+        efficiency: float,
+        model: str,
+        memory: int,
+        color: str,
+    ):
+        super().__init__(name, description, price, quantity)
+
+        self.efficiency = efficiency
+        self.model = model
+        self.memory = memory
+        self.color = color
+
+    def __str__(self):
+        """Строковое представление смартфона"""
+        return (
+            f"{self.name} ({self.model}), {self.price} руб. "
+            f"Память: {self.memory}GB, Цвет: {self.color} "
+            f"Остаток: {self.quantity} шт. "
+        )
+
+
+class LawnGrass(Product):
+    """Класс для газонной травы - наследуется от Product"""
+
+    def __init__(
+        self,
+        name: str,
+        description: str,
+        price: float,
+        quantity: int,
+        country: str,
+        germination_period: str,
+        color: str,
+    ):
+        super().__init__(name, description, price, quantity)
+
+        self.country = country
+        self.germination_period = germination_period
+        self.color = color
+
+    def __str__(self):
+        """Строковое представление для газонной травы"""
+        return (
+            f"{self.name}, {self.price} руб. "
+            f"Страна: {self.country}, Прорастание: {self.germination_period}. "
+            f"Остаток: {self.quantity} шт."
+        )
 
 
 class Category:
@@ -81,7 +142,7 @@ class Category:
     def add_product(self, product):
         """Добавляет продукт в категорию"""
         if not isinstance(product, Product):
-            raise ValueError("Можно добавлять только объекты класса Product")
+            raise ValueError("Можно добавлять только объекты класса Product или его наследников")
 
         existing_product = next((i for i in self.__products if i.name == product.name), None)
         if existing_product:
