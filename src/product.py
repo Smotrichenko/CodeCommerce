@@ -19,6 +19,9 @@ class Product:
         if not isinstance(other, Product):
             raise TypeError("Можно складывать только объекты класса Product")
 
+        if type(self) is not type(other):
+            raise TypeError("Можно складывать только товары из одинаковых классов")
+
         return (self.price * self.quantity) + (other.price * other.quantity)
 
     @classmethod
@@ -49,54 +52,66 @@ class Product:
         if new_price <= 0:
             print("Цена не должна быть нулевая или отрицательная")
         elif new_price < self.__price:
-            confirm = input(f"Цена снижается с {self.__price} до {new_price}. Подтвердите (y/n): ")
+            confirm = input(f"Цена снижается с {self._price} до {new_price}. Подтвердите (y/n): ")
             if confirm.lower() == "y":
                 self.__price = new_price
         else:
             self.__price = new_price
 
 
-class Category:
-    """Класс для представления категории продукта"""
+class Smartphone(Product):
+    """Класс для смартфонов - наследуется от Product"""
 
-    category_count = 0
-    product_count = 0
+    def __init__(
+        self,
+        name: str,
+        description: str,
+        price: float,
+        quantity: int,
+        efficiency: float,
+        model: str,
+        memory: int,
+        color: str,
+    ):
+        super().__init__(name, description, price, quantity)
 
-    def __init__(self, name: str, description: str, products: list = None):
-        self.name = name
-        self.description = description
-        self.__products = []
-
-        if products:
-            for product in products:
-                self.add_product(product)
-
-        Category.category_count += 1
+        self.efficiency = efficiency
+        self.model = model
+        self.memory = memory
+        self.color = color
 
     def __str__(self):
-        """Строковое представление категории: Название и Общее количество товаров"""
-        total_quantity = sum(product.quantity for product in self.__products)
-        return f"{self.name}, количество продуктов: {total_quantity} шт."
+        """Строковое представление смартфона"""
+        return (
+            f"{self.name} ({self.model}), {self.price} руб. "
+            f"Память: {self.memory}GB, Цвет: {self.color} "
+            f"Остаток: {self.quantity} шт. "
+        )
 
-    def add_product(self, product):
-        """Добавляет продукт в категорию"""
-        if not isinstance(product, Product):
-            raise ValueError("Можно добавлять только объекты класса Product")
 
-        existing_product = next((i for i in self.__products if i.name == product.name), None)
-        if existing_product:
-            existing_product.quantity += product.quantity
-            if product.price > existing_product.price:
-                existing_product.price = product.price
-                existing_product.description = product.description
-        else:
-            self.__products.append(product)
-            Category.product_count += 1
+class LawnGrass(Product):
+    """Класс для газонной травы - наследуется от Product"""
 
-    @property
-    def products(self):
-        """Возвращает список строк с информацией о продуктах"""
-        return [str(product) for product in self.__products]
+    def __init__(
+        self,
+        name: str,
+        description: str,
+        price: float,
+        quantity: int,
+        country: str,
+        germination_period: str,
+        color: str,
+    ):
+        super().__init__(name, description, price, quantity)
 
-    def __len__(self):
-        return len(self.__products)
+        self.country = country
+        self.germination_period = germination_period
+        self.color = color
+
+    def __str__(self):
+        """Строковое представление для газонной травы"""
+        return (
+            f"{self.name}, {self.price} руб. "
+            f"Страна: {self.country}, Прорастание: {self.germination_period}. "
+            f"Остаток: {self.quantity} шт."
+        )
