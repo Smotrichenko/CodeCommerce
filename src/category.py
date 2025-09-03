@@ -1,15 +1,28 @@
+from abc import ABC, abstractmethod
+
 from src.product import Product
 
 
-class Category:
+class BaseContainer(ABC):
+    """Абстрактный класс для категорий продуктов"""
+
+    def __init__(self, name: str, description: str):
+        self.name = name
+        self.description = description
+
+    @abstractmethod
+    def __str__(self):
+        pass
+
+
+class Category(BaseContainer):
     """Класс для представления категории продукта"""
 
     category_count = 0
     product_count = 0
 
     def __init__(self, name: str, description: str, products: list = None):
-        self.name = name
-        self.description = description
+        super().__init__(name, description)
         self.__products = []
 
         if products:
@@ -45,3 +58,17 @@ class Category:
 
     def __len__(self):
         return len(self.__products)
+
+
+class Order(BaseContainer):
+    def __init__(self, name: str, description: str, product: Product, quantity: int):
+        super().__init__(name, description)
+        self.product = product
+        self.quantity = quantity
+        self.total_price = product.price * quantity
+
+    def __str__(self):
+        return (
+            f"Заказ: {self.name}, Товар: {self.product.name}, "
+            f"Количество: {self.quantity}, Итого: {self.total_price} руб. "
+        )

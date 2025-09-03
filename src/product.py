@@ -1,14 +1,58 @@
+from abc import ABC, abstractmethod
 from typing import Dict, List
 
 
-class Product:
-    """Класс для представления продукта"""
+class ReprMixin:
+    """Миксин для вывода информации о создании объекта"""
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        print(f"{self.__class__.__name__}{self.__repr__()}")
+
+
+class BaseProduct(ABC):
+    """Абстрактный класс для всех продуктов"""
+
+    @abstractmethod
     def __init__(self, name: str, description: str, price: float, quantity: int):
         self.name = name
         self.description = description
         self.__price = price
         self.quantity = quantity
+
+    @abstractmethod
+    def __str__(self):
+        pass
+
+    @abstractmethod
+    def __add__(self, other):
+        pass
+
+    @property
+    def price(self):
+        return self.__price
+
+    @price.setter
+    def price(self, new_price):
+        if new_price <= 0:
+            print("Цена не должна быть нулевая или отрицательная")
+        elif new_price < self.__price:
+            confirm = input(f"Цена снижается с {self.__price} до {new_price}. Подтвердите (y/n): ")
+            if confirm.lower() == "y":
+                self.__price = new_price
+        else:
+            self.__price = new_price
+
+
+class Product(BaseProduct, ReprMixin):
+    """Класс для представления продукта"""
+
+    def __init__(self, name: str, description: str, price: float, quantity: int):
+        BaseProduct.__init__(self, name, description, price, quantity)
+        ReprMixin.__init__(self)
+
+    def __repr__(self):
+        return f"('{self.name}', '{self.description}', {self.price}, {self.quantity})"
 
     def __str__(self):
         """Строковое представление для пользователя: Название, Цена и Остаток"""
@@ -42,21 +86,6 @@ class Product:
                     return product
 
         return cls(**product_data)
-
-    @property
-    def price(self):
-        return self.__price
-
-    @price.setter
-    def price(self, new_price):
-        if new_price <= 0:
-            print("Цена не должна быть нулевая или отрицательная")
-        elif new_price < self.__price:
-            confirm = input(f"Цена снижается с {self._price} до {new_price}. Подтвердите (y/n): ")
-            if confirm.lower() == "y":
-                self.__price = new_price
-        else:
-            self.__price = new_price
 
 
 class Smartphone(Product):

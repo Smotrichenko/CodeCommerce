@@ -1,7 +1,7 @@
 import pytest
 
-from src.category import Category
-from src.product import Product
+from src.category import BaseContainer, Category, Order
+from src.product import BaseProduct, Product
 
 
 def test_product_initialization(sample_product):
@@ -284,7 +284,6 @@ def test_category_with_mixed_products(sample_smartphones, sample_lawns):
     """Тест категории со смешанными типами продуктов"""
     mixed_products = sample_smartphones + sample_lawns
     category = Category("Смешанная категория", "Разные товары", mixed_products)
-
     assert len(category.products) == 4
     assert "Смартфон 1" in category.products[0]
     assert "Трава 1" in category.products[2]
@@ -294,6 +293,45 @@ def test_category_str_with_mixed_products(sample_smartphones, sample_lawns):
     """Тест строкового представления категории со смешанными товарами"""
     mixed_products = sample_smartphones + sample_lawns
     category = Category("Смешанная категория", "Разные товары", mixed_products)
-
     total_quantity = 3 + 2 + 10 + 8  # 23 товара
     assert str(category) == f"Смешанная категория, количество продуктов: {total_quantity} шт."
+
+
+def test_base_product_abstract():
+    """Тест что BaseProduct является абстрактным"""
+    with pytest.raises(TypeError):
+        BaseProduct("Test", "Desc", 100, 10)
+
+
+def test_repr_mixin(capsys):
+    """Тест миксина для вывода информации"""
+    product = Product("Test", "Desc", 100, 5)
+    captured = capsys.readouterr()
+    assert "Product('Test', 'Desc', 100, 5)" in captured.out
+
+
+def test_order_creation(sample_product):
+    """Тест создания заказа"""
+    order = Order("Мой заказ", "Первый заказ", sample_product, 3)
+    assert order.name == "Мой заказ"
+    assert order.product == sample_product
+    assert order.quantity == 3
+    assert order.total_price == 1000 * 3  # 3000
+
+
+def test_order_str(sample_product):
+    """Тест строкового представления заказа"""
+    order = Order("Тестовый заказ", "Описание", sample_product, 2)
+    result = str(order)
+    assert "Заказ: Тестовый заказ" in result
+    assert "Товар: Тестовый товар" in result
+    assert "Количество: 2" in result
+    assert "Итого: 2000.0 руб." in result
+
+
+def test_base_container_inheritance():
+    """Тест что Category и Order наследуют от BaseContainer"""
+    category = Category("Test", "Desc")
+    order = Order("Test", "Desc", Product("T", "D", 100, 1), 1)
+    assert isinstance(category, BaseContainer)
+    assert isinstance(order, BaseContainer)
