@@ -5,9 +5,8 @@ from typing import Dict, List
 class ReprMixin:
     """Миксин для вывода информации о создании объекта"""
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        print(f"{self.__class__.__name__}{self.__repr__()}")
+    def __repr__(self):
+        return f"('{self.name}', '{self.description}', {self.price}, {self.quantity})"
 
 
 class BaseProduct(ABC):
@@ -28,6 +27,53 @@ class BaseProduct(ABC):
     def __add__(self, other):
         pass
 
+    @abstractmethod
+    def __repr__(self):
+        pass
+
+    @property
+    @abstractmethod
+    def price(self):
+        pass
+
+    @price.setter
+    @abstractmethod
+    def price(self, value):
+        pass
+
+    @classmethod
+    @abstractmethod
+    def new_product(cls, product_data: Dict, existing_products: List = None):
+        pass
+
+
+class Product(BaseProduct, ReprMixin):
+    """Класс для представления продукта"""
+
+    def __init__(self, name: str, description: str, price: float, quantity: int):
+        self.name = name
+        self.description = description
+        self.__price = price
+        self.quantity = quantity
+        print(f"{self.__class__.__name__}{self.__repr__()}")
+
+    def __repr__(self):
+        return f"('{self.name}', '{self.description}', {self.__price}, {self.quantity})"
+
+    def __str__(self):
+        """Строковое представление для пользователя: Название, Цена и Остаток"""
+        return f"{self.name}, {self.__price} руб. Остаток: {self.quantity} шт."
+
+    def __add__(self, other):
+        """Сложение продуктов: возвращает общую стоимость всех товаров"""
+        if not isinstance(other, Product):
+            raise TypeError("Можно складывать только объекты класса Product")
+
+        if type(self) is not type(other):
+            raise TypeError("Можно складывать только товары из одинаковых классов")
+
+        return (self.__price * self.quantity) + (other.price * other.quantity)
+
     @property
     def price(self):
         return self.__price
@@ -42,31 +88,6 @@ class BaseProduct(ABC):
                 self.__price = new_price
         else:
             self.__price = new_price
-
-
-class Product(BaseProduct, ReprMixin):
-    """Класс для представления продукта"""
-
-    def __init__(self, name: str, description: str, price: float, quantity: int):
-        BaseProduct.__init__(self, name, description, price, quantity)
-        ReprMixin.__init__(self)
-
-    def __repr__(self):
-        return f"('{self.name}', '{self.description}', {self.price}, {self.quantity})"
-
-    def __str__(self):
-        """Строковое представление для пользователя: Название, Цена и Остаток"""
-        return f"{self.name}, {self.price} руб. Остаток: {self.quantity} шт."
-
-    def __add__(self, other):
-        """Сложение продуктов: возвращает общую стоимость всех товаров"""
-        if not isinstance(other, Product):
-            raise TypeError("Можно складывать только объекты класса Product")
-
-        if type(self) is not type(other):
-            raise TypeError("Можно складывать только товары из одинаковых классов")
-
-        return (self.price * self.quantity) + (other.price * other.quantity)
 
     @classmethod
     def new_product(cls, product_data: Dict, existing_products: List = None):
