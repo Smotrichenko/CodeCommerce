@@ -5,64 +5,35 @@ from typing import Dict, List
 class ReprMixin:
     """Миксин для вывода информации о создании объекта"""
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        print(f"{self.__class__.__name__}{self!r}")
+
     def __repr__(self):
-        return f"('{self.name}', '{self.description}', {self.price}, {self.quantity})"
+        return f"('{self.name}', '{self.description}', {self._price}, {self.quantity})"
 
 
 class BaseProduct(ABC):
     """Абстрактный класс для всех продуктов"""
 
     @abstractmethod
-    def __init__(self, name: str, description: str, price: float, quantity: int):
-        self.name = name
-        self.description = description
-        self.__price = price
-        self.quantity = quantity
-
-    @abstractmethod
     def __str__(self):
         pass
 
-    @abstractmethod
-    def __add__(self, other):
-        pass
 
-    @abstractmethod
-    def __repr__(self):
-        pass
-
-    @property
-    @abstractmethod
-    def price(self):
-        pass
-
-    @price.setter
-    @abstractmethod
-    def price(self, value):
-        pass
-
-    @classmethod
-    @abstractmethod
-    def new_product(cls, product_data: Dict, existing_products: List = None):
-        pass
-
-
-class Product(BaseProduct, ReprMixin):
+class Product(ReprMixin, BaseProduct):
     """Класс для представления продукта"""
 
-    def __init__(self, name: str, description: str, price: float, quantity: int):
+    def __init__(self, name: str, description: str, price: float, quantity: int, *args, **kwargs):
         self.name = name
         self.description = description
-        self.__price = price
+        self._price = price
         self.quantity = quantity
-        print(f"{self.__class__.__name__}{self.__repr__()}")
-
-    def __repr__(self):
-        return f"('{self.name}', '{self.description}', {self.__price}, {self.quantity})"
+        super().__init__(*args, **kwargs)
 
     def __str__(self):
         """Строковое представление для пользователя: Название, Цена и Остаток"""
-        return f"{self.name}, {self.__price} руб. Остаток: {self.quantity} шт."
+        return f"{self.name}, {self._price} руб. Остаток: {self.quantity} шт."
 
     def __add__(self, other):
         """Сложение продуктов: возвращает общую стоимость всех товаров"""
@@ -72,22 +43,22 @@ class Product(BaseProduct, ReprMixin):
         if type(self) is not type(other):
             raise TypeError("Можно складывать только товары из одинаковых классов")
 
-        return (self.__price * self.quantity) + (other.price * other.quantity)
+        return (self._price * self.quantity) + (other.price * other.quantity)
 
     @property
     def price(self):
-        return self.__price
+        return self._price
 
     @price.setter
     def price(self, new_price):
         if new_price <= 0:
             print("Цена не должна быть нулевая или отрицательная")
-        elif new_price < self.__price:
-            confirm = input(f"Цена снижается с {self.__price} до {new_price}. Подтвердите (y/n): ")
+        elif new_price < self._price:
+            confirm = input(f"Цена снижается с {self._price} до {new_price}. Подтвердите (y/n): ")
             if confirm.lower() == "y":
-                self.__price = new_price
+                self._price = new_price
         else:
-            self.__price = new_price
+            self._price = new_price
 
     @classmethod
     def new_product(cls, product_data: Dict, existing_products: List = None):
