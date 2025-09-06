@@ -1,32 +1,76 @@
+from abc import ABC, abstractmethod
 from typing import Dict, List
 
 
-class Product:
+class ReprMixin:
+    """Миксин для вывода информации о создании объекта"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        print(f"{self.__class__.__name__}{self!r}")
+
+    def __repr__(self):
+        return f"('{self.name}', '{self.description}', {self._price}, {self.quantity})"
+
+
+class BaseProduct(ABC):
+    """Абстрактный класс для всех продуктов"""
+
+    @abstractmethod
+    def __str__(self):
+        pass
+
+    @classmethod
+    @abstractmethod
+    def new_product(cls, product_data: Dict, existing_products: List = None):
+        pass
+
+
+class Product(ReprMixin, BaseProduct):
     """Класс для представления продукта"""
 
-    def __init__(self, name: str, description: str, price: float, quantity: int):
+    def __init__(self, name: str, description: str, price: float, quantity: int, *args, **kwargs):
         self.name = name
         self.description = description
-        self.__price = price
+        self._price = price
         self.quantity = quantity
+        super().__init__(*args, **kwargs)
 
     def __str__(self):
         """Строковое представление для пользователя: Название, Цена и Остаток"""
-        return f"{self.name}, {self.price} руб. Остаток: {self.quantity} шт."
+
+        return f"{self.name}, {self._price} руб. Остаток: {self.quantity} шт."
 
     def __add__(self, other):
         """Сложение продуктов: возвращает общую стоимость всех товаров"""
+
         if not isinstance(other, Product):
             raise TypeError("Можно складывать только объекты класса Product")
 
         if type(self) is not type(other):
             raise TypeError("Можно складывать только товары из одинаковых классов")
 
-        return (self.price * self.quantity) + (other.price * other.quantity)
+        return (self._price * self.quantity) + (other.price * other.quantity)
+
+    @property
+    def price(self):
+        return self._price
+
+    @price.setter
+    def price(self, new_price):
+        if new_price <= 0:
+            print("Цена не должна быть нулевая или отрицательная")
+        elif new_price < self._price:
+            confirm = input(f"Цена снижается с {self._price} до {new_price}. Подтвердите (y/n): ")
+            if confirm.lower() == "y":
+                self._price = new_price
+        else:
+            self._price = new_price
 
     @classmethod
     def new_product(cls, product_data: Dict, existing_products: List = None):
         """Создает новый продукт или обновляет существующий"""
+
         name = product_data["name"]
         description = product_data["description"]
         price = product_data["price"]
@@ -42,21 +86,6 @@ class Product:
                     return product
 
         return cls(**product_data)
-
-    @property
-    def price(self):
-        return self.__price
-
-    @price.setter
-    def price(self, new_price):
-        if new_price <= 0:
-            print("Цена не должна быть нулевая или отрицательная")
-        elif new_price < self.__price:
-            confirm = input(f"Цена снижается с {self._price} до {new_price}. Подтвердите (y/n): ")
-            if confirm.lower() == "y":
-                self.__price = new_price
-        else:
-            self.__price = new_price
 
 
 class Smartphone(Product):
@@ -82,6 +111,7 @@ class Smartphone(Product):
 
     def __str__(self):
         """Строковое представление смартфона"""
+
         return (
             f"{self.name} ({self.model}), {self.price} руб. "
             f"Память: {self.memory}GB, Цвет: {self.color} "
@@ -110,6 +140,7 @@ class LawnGrass(Product):
 
     def __str__(self):
         """Строковое представление для газонной травы"""
+
         return (
             f"{self.name}, {self.price} руб. "
             f"Страна: {self.country}, Прорастание: {self.germination_period}. "
