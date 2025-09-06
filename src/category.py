@@ -59,10 +59,9 @@ class Category(BaseContainer):
 
             print("Товар успешно добавлен")
 
-        except ZeroQuantityError as e:
+        except (ZeroQuantityError, ValueError) as e:
             print(f"Ошибка: {e}")
-        except ValueError as e:
-            print(f"Ошибка: {e}")
+            raise
         finally:
             print("Обработка добавления товара завершена")
 
@@ -83,16 +82,17 @@ class Category(BaseContainer):
             total_quantity = sum(product.quantity for product in self.__products)
             return f"{round(total_price / total_quantity, 2)} руб."
         except ZeroDivisionError:
-            return 0.0
+            return "0.0 руб."
 
 
 class Order(BaseContainer):
     def __init__(self, name: str, description: str, product: Product, quantity: int):
+        if product.quantity == 0:
+            raise ZeroQuantityError("Нельзя заказать товар с нулевым количеством")
+        if quantity == 0:
+            raise ZeroQuantityError("Количество товара в заказе не может быть нулевым")
+
         try:
-            if product.quantity == 0:
-                raise ZeroQuantityError("Нельзя заказать товар с нулевым количеством")
-            if quantity == 0:
-                raise ZeroQuantityError("Количество товара в заказе не может быть нулевым")
             super().__init__(name, description)
             self.product = product
             self.quantity = quantity
