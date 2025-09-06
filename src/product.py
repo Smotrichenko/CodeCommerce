@@ -2,6 +2,11 @@ from abc import ABC, abstractmethod
 from typing import Dict, List
 
 
+class ZeroQuantityError(Exception):
+    """Исключение для товаров с нулевым количеством"""
+    pass
+
+
 class ReprMixin:
     """Миксин для вывода информации о создании объекта"""
 
@@ -30,6 +35,8 @@ class Product(ReprMixin, BaseProduct):
     """Класс для представления продукта"""
 
     def __init__(self, name: str, description: str, price: float, quantity: int, *args, **kwargs):
+        if quantity == 0:
+            raise ZeroQuantityError("Товар с нулевым количеством не может быть добавлен")
         self.name = name
         self.description = description
         self._price = price

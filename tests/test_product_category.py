@@ -1,7 +1,7 @@
 import pytest
 
 from src.category import BaseContainer, Category, Order
-from src.product import BaseProduct, Product
+from src.product import BaseProduct, Product, ZeroQuantityError
 
 
 def test_product_initialization(sample_product):
@@ -130,11 +130,8 @@ def test_product_addition_different_values():
 
 
 def test_product_addition_zero_quantity():
-    product1 = Product("Товар 1", "Описание", 100.0, 0)  # 0
-    product2 = Product("Товар 2", "Описание", 200.0, 5)  # 1000
-    result = product1 + product2
-    expected = 0 + 1000
-    assert result == expected
+    with pytest.raises(ZeroQuantityError, match="Товар с нулевым количеством не может быть добавлен"):
+        Product("Тестовый товар", "Описание", 100.0, 0)
 
 
 def test_product_addition_type_error(sample_product):
@@ -208,7 +205,7 @@ def test_smartphone_addition_same_class(sample_smartphones):
     """Тест сложения смартфонов одинакового класса"""
     phone1, phone2 = sample_smartphones
     result = phone1 + phone2
-    expected = (30000 * 3) + (40000 * 2)  # 90000 + 80000 = 170000
+    expected = (30000 * 3) + (40000 * 2)
     assert result == expected
 
 
@@ -224,7 +221,7 @@ def test_product_addition_same_class(sample_products):
     """Тест сложения обычных продуктов одинакового класса"""
     product1, product2 = sample_products
     result = product1 + product2
-    expected = (100 * 5) + (200 * 3)  # 500 + 600 = 1100
+    expected = (100 * 5) + (200 * 3)
     assert result == expected
 
 
@@ -316,7 +313,7 @@ def test_order_creation(sample_product):
     assert order.name == "Мой заказ"
     assert order.product == sample_product
     assert order.quantity == 3
-    assert order.total_price == 1000 * 3  # 3000
+    assert order.total_price == 1000 * 3
 
 
 def test_order_str(sample_product):
@@ -335,3 +332,71 @@ def test_base_container_inheritance():
     order = Order("Test", "Desc", Product("T", "D", 100, 1), 1)
     assert isinstance(category, BaseContainer)
     assert isinstance(order, BaseContainer)
+
+
+def test_product_zero_quantity():
+    """Тест создания товара с нулевым количеством"""
+    with pytest.raises(ZeroQuantityError, match="Товар с нулевым количеством не может быть добавлен"):
+        Product("Тестовый товар", "Описание", 100.0, 0)
+
+
+def test_category_average_price_empty():
+    """Тест среднего ценника пустой категории"""
+    category = Category("Пустая", "Описание")
+    assert category.get_average_price() == "0.0 руб."
+
+
+def test_category_average_price_with_products():
+    """Тест среднего ценника категории с товарами"""
+    product1 = Product("Товар 1", "Описание", 100.0, 2)
+    product2 = Product("Товар 2", "Описание", 200.0, 3)
+
+    category = Category("Тест", "Описание", [product1, product2])
+
+    # (100*2 + 200*3) / (2+3) = (200 + 600) / 5 = 800 / 5 = 160.0
+    assert category.get_average_price() == "160.0 руб."
+
+
+def test_category_add_zero_quantity_product(capsys):
+    """Тест добавления товара с нулевым количеством в категорию"""
+    category = Category("Тест", "Описание")
+    zero_product = Product("Нулевой товар", "Описание", 100.0, 1)
+    zero_product.quantity = 0  # Меняем количество на 0
+
+    with pytest.raises(ZeroQuantityError, match="Нельзя добавить товар с нулевым количеством"):
+        category.add_product(zero_product)
+
+    captured = capsys.readouterr()
+    assert "Ошибка: Нельзя добавить товар с нулевым количеством" in captured.out
+    assert "Обработка добавления товара завершена" in captured.out
+    assert len(category.products) == 0  # Товар не добавлен
+
+
+def test_order_zero_quantity_product():
+    """Тест создания заказа с нулевым количеством товара"""
+    product = Product("Товар", "Описание", 100.0, 1)
+    product.quantity = 0
+
+    with pytest.raises(ZeroQuantityError, match="Нельзя заказать товар с нулевым количеством"):
+        Order("Заказ", "Описание", product, 1)
+
+
+def test_order_zero_quantity():
+    """Тест создания заказа с нулевым количеством"""
+    product = Product("Товар", "Описание", 100.0, 5)
+
+    with pytest.raises(ZeroQuantityError, match="Количество товара в заказе не может быть нулевым"):
+        Order("Заказ", "Описание", product, 0)
+
+
+def test_successful_product_addition(capsys):
+    """Тест успешного добавления товара"""
+    category = Category("Тест", "Описание")
+    product = Product("Товар", "Описание", 100.0, 5)
+
+    category.add_product(product)
+
+    captured = capsys.readouterr()
+    assert "Товар успешно добавлен" in captured.out
+    assert "Обработка добавления товара завершена" in captured.out
+    assert len(category.products) == 1
