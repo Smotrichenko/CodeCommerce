@@ -20,6 +20,11 @@ class BaseProduct(ABC):
     def __str__(self):
         pass
 
+    @classmethod
+    @abstractmethod
+    def new_product(cls, product_data: Dict, existing_products: List = None):
+        pass
+
 
 class Product(ReprMixin, BaseProduct):
     """Класс для представления продукта"""
@@ -33,10 +38,12 @@ class Product(ReprMixin, BaseProduct):
 
     def __str__(self):
         """Строковое представление для пользователя: Название, Цена и Остаток"""
+
         return f"{self.name}, {self._price} руб. Остаток: {self.quantity} шт."
 
     def __add__(self, other):
         """Сложение продуктов: возвращает общую стоимость всех товаров"""
+
         if not isinstance(other, Product):
             raise TypeError("Можно складывать только объекты класса Product")
 
@@ -63,6 +70,7 @@ class Product(ReprMixin, BaseProduct):
     @classmethod
     def new_product(cls, product_data: Dict, existing_products: List = None):
         """Создает новый продукт или обновляет существующий"""
+
         name = product_data["name"]
         description = product_data["description"]
         price = product_data["price"]
@@ -103,6 +111,7 @@ class Smartphone(Product):
 
     def __str__(self):
         """Строковое представление смартфона"""
+
         return (
             f"{self.name} ({self.model}), {self.price} руб. "
             f"Память: {self.memory}GB, Цвет: {self.color} "
@@ -131,6 +140,7 @@ class LawnGrass(Product):
 
     def __str__(self):
         """Строковое представление для газонной травы"""
+
         return (
             f"{self.name}, {self.price} руб. "
             f"Страна: {self.country}, Прорастание: {self.germination_period}. "
